@@ -30,9 +30,10 @@ function Require-Var {
 $Repo = Load-Var "REPO" "gcr.io/faunadb-cloud"
 $Version = Load-Var "FAUNADB_VERSION" $null
 $PkgVersion = Load-Var "FAUNADB_PKG_VERSION" $null
+$JDKVersion = Load-Var "FAUNADB_JDK_VERSION" $null
 $Nightly = Load-Var "FAUNADB_NIGHTLY" $null
 $ExtraTags = Load-Var "EXTRA_TAGS" ""
-$Tags = "$Version $ExtraTags".Trim() -Split "\s+"
+$Tags = "$Version-jdk$JDKVersion $ExtraTags".Trim() -Split "\s+"
 
 function Target-All {
     Target-FetchRelease
@@ -66,8 +67,9 @@ function Target-FetchNightly {
 function Target-Build {
     Require-Var "FAUNADB_VERSION" $Version
     Require-Var "FAUNADB_PKG_VERSION" $PkgVersion
+    Require-Var "FAUNADB_JDK_VERSION" $JDKVersion
 
-    docker build --pull --build-arg "VERSION=$Version" --build-arg "PKG_VERSION=$PkgVersion" -t "faunadb/enterprise:$Version-windows" .
+    docker build --pull --build-arg "VERSION=$Version" --build-arg "PKG_VERSION=$PkgVersion" --build-arg "JDK_VERSION=$JDKVersion" -t "faunadb/enterprise:$Version-windows" .
     if ($LastExitCode -ne '0') { Exit $LastExitCode }
 }
 
@@ -108,6 +110,7 @@ foreach ($arg in $args) {
             "REPO"                { $Repo = $Value }
             "FAUNADB_VERSION"     { $Version = $Value }
             "FAUNADB_PKG_VERSION" { $PkgVersion = $Value }
+            "FAUNADB_JDK_VERSION" { $JDKVersion = $Value }
             "FAUNADB_NIGHTLY"     { $Nightly = $Value }
             "EXTRA_TAGS"          { $ExtraTags = $Value; $Tags = "$Version $ExtraTags".Trim() -Split "\s+" }
         }

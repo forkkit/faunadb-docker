@@ -1,3 +1,4 @@
+ARG JDK_VERSION
 # Prepare enterprise package
 FROM microsoft/windowsservercore:1803 AS enterprise-package
 
@@ -13,7 +14,7 @@ RUN Expand-Archive ('faunadb-enterprise-{0}.zip' -f $env:PKG_VERSION) -Destinati
 	Remove-Item ('faunadb-enterprise-{0}.zip' -f $env:PKG_VERSION) -Force; \
 	Rename-Item -Path ('faunadb-{0}' -f $env:PKG_VERSION) -NewName 'faunadb-enterprise'
 
-FROM openjdk:8-windowsservercore-1803 AS openjdk-package
+FROM openjdk:$JDK_VERSION-windowsservercore-1803 AS openjdk-package
 
 # Final docker image
 FROM microsoft/powershell:windowsservercore-1803
