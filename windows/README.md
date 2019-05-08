@@ -17,7 +17,7 @@ Run `make.ps1` with the version and package version that you wish to build a pac
 for. The script will fetch the build from S3 and generate the Docker image.
 
 ```powershell
-.\make.ps1 FAUNADB_VERSION=<version> FAUNADB_PKG_VERSION=<package version>
+.\make.ps1 FAUNADB_VERSION=<version> FAUNADB_PKG_VERSION=<package version> FAUNADB_JDK_VERSION=<jdk version>
 ```
 
 ## How to use

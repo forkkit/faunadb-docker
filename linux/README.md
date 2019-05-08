@@ -14,7 +14,7 @@ Simply run make with the version and package version that you wish to build a
 package for. Make will fetch the build from S3 and generate the Docker image.
 
 ```bash
-$ make FAUNADB_VERSION=<version> FAUNADB_PKG_VERSION=<package version>
+$ make FAUNADB_VERSION=<version> FAUNADB_PKG_VERSION=<package version> FAUNADB_JDK_VERSION=<jdk version>
 ```
 
 ## How to use
@@ -74,7 +74,7 @@ $ docker run --rm --name faunadb -p 8443:8443 \
 
 ### FaunaDB config
 
-The previous command will start a FaunaDB instance using the default configurations, if you want however specify your own parameters you would need to map a config file and pass it to the command line 
+The previous command will start a FaunaDB instance using the default configurations, if you want however specify your own parameters you would need to map a config file and pass it to the command line
 
 ```bash
 $ docker run --rm --name faunadb -p 8443:8443 \

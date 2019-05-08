@@ -1,11 +1,11 @@
 EXTRA_TAGS ?=
-TAGS := $(FAUNADB_VERSION) $(EXTRA_TAGS)
+TAGS := $(FAUNADB_VERSION)-jdk$(FAUNADB_JDK_VERSION) $(EXTRA_TAGS)
 define \n
 
 
 endef
 
-.PHONY: all fetch-release fetch-nightly build publish-release publish-nightly -fetch -has-version -has-pkg-version -has-nightly
+.PHONY: all fetch-release fetch-nightly build publish-release publish-nightly -fetch -has-version -has-pkg-version -has-jdk-version -has-nightly
 
 all: fetch-release build
 
@@ -13,22 +13,26 @@ fetch-release: -has-version -has-pkg-version -fetch
 
 fetch-nightly: -has-nightly -has-pkg-version -fetch
 
-build: -has-version -has-pkg-version
-	docker build --pull --build-arg VERSION=$(FAUNADB_VERSION) --build-arg PKG_VERSION=$(FAUNADB_PKG_VERSION) -t faunadb-enterprise:local .
+build: -has-version -has-pkg-version -has-jdk-version
+	docker build --pull \
+		--build-arg VERSION=$(FAUNADB_VERSION) \
+		--build-arg PKG_VERSION=$(FAUNADB_PKG_VERSION) \
+		--build-arg JDK_VERSION=$(FAUNADB_JDK_VERSION) \
+		-t faunadb-enterprise:local .
 
-publish-stable-release: -has-version
+publish-stable-release: -has-version -has-jdk-version
 	$(foreach TAG,$(TAGS),docker tag faunadb-enterprise:local fauna/faunadb:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker push fauna/faunadb:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker tag faunadb-enterprise:local gcr.io/faunadb-cloud/faunadb/enterprise/release:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker push gcr.io/faunadb-cloud/faunadb/enterprise/release:$(TAG)${\n})
 
-publish-unstable-release: -has-version
+publish-unstable-release: -has-version -has-jdk-version
 	$(foreach TAG,$(TAGS),docker tag faunadb-enterprise:local fauna/faunadb-unstable:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker push fauna/faunadb-unstable:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker tag faunadb-enterprise:local gcr.io/faunadb-cloud/faunadb/enterprise/unstable:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker push gcr.io/faunadb-cloud/faunadb/enterprise/unstable:$(TAG)${\n})
 
-publish-nightly: -has-version
+publish-nightly: -has-version -has-jdk-version
 	$(foreach TAG,$(TAGS),docker tag faunadb-enterprise:local gcr.io/faunadb-cloud/faunadb/enterprise/nightly:$(TAG)${\n})
 	$(foreach TAG,$(TAGS),docker push gcr.io/faunadb-cloud/faunadb/enterprise/nightly:$(TAG)${\n})
 
@@ -45,6 +49,11 @@ endif
 -has-pkg-version:
 ifndef FAUNADB_PKG_VERSION
 	$(error FAUNADB_PKG_VERSION is undefined)
+endif
+
+-has-jdk-version:
+ifndef FAUNADB_JDK_VERSION
+	$(error FAUNADB_JDK_VERSION is undefined)
 endif
 
 -has-nightly:

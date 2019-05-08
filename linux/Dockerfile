@@ -1,3 +1,4 @@
+ARG JDK_VERSION
 # Prepare enterprise package
 FROM debian:stretch-slim AS enterprise-package
 
@@ -17,7 +18,7 @@ RUN unzip -q faunadb-enterprise-$PKG_VERSION.zip && \
 	rm -r faunadb-$PKG_VERSION
 
 # Final docker image
-FROM openjdk:8-slim
+FROM openjdk:$JDK_VERSION-slim
 LABEL maintainer="Fauna, Inc. <support@fauna.com>"
 
 ENV UID=0 \
