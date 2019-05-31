@@ -23,8 +23,10 @@ LABEL maintainer="Fauna, Inc. <support@fauna.com>"
 
 WORKDIR faunadb
 
+ARG JDK_VERSION
+
 COPY --from=openjdk-package \
-     C:\\openjdk-$JDK_VERSION \
+     C:\\openjdk-${JDK_VERSION} \
      C:\\java
 
 COPY --from=enterprise-package \
