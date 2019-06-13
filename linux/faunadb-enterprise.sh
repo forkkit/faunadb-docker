@@ -5,7 +5,7 @@ set -e
 host_ip=$(hostname -i)
 join_node="$host_ip"
 action=""
-config_file=""
+user_config_file=""
 custom_replica_name=""
 
 show_help() {
@@ -41,7 +41,7 @@ while [ $# -gt 0 ]; do
         echo "Argument --config needs a file path."
         exit 1
       else
-        config_file="$2"
+        user_config_file="$2"
         shift 1
       fi
       shift 1
@@ -92,11 +92,13 @@ done
 # this is fauna default paths
 default_data_path="/var/lib/faunadb"
 default_log_path="/var/log/faunadb"
+final_config_path="/etc/faunadb.yml"
+template_default_configs="/etc/faunadb.yml.default"
 
-if [ -z "$config_file" ]; then
-  config_file="/faunadb/enterprise/default.yml"
+default_admin_http_port=8444
+default_admin_http_address="127.0.0.1"
 
-  cat > "$config_file" <<EOF
+cat > "$template_default_configs" <<EOF
 ---
 auth_root_key: secret
 replica_name: ${custom_replica_name:-NoDc}
@@ -104,16 +106,22 @@ storage_data_path: $default_data_path
 log_path: $default_log_path
 network_listen_address: $host_ip
 network_broadcast_address: $host_ip
-network_admin_http_address: 127.0.0.1     #don't expose admin endpoint outside docker by default
-network_coordinator_http_address: 0.0.0.0 #expose api endpoint to all interfaces
+network_admin_http_address: $default_admin_http_address #don't expose admin endpoint outside docker by default
+network_coordinator_http_address: 0.0.0.0               #expose api endpoint to all interfaces
 EOF
-fi
+
+list_configs() {
+  local file=$1
+
+  sed -n "s/^\(.\+\):[[:space:]]*.\+$/\1/p" "$file" | awk -F# '{print $1}'
+}
 
 get_config() {
-  local config=$1
-  local default=$2
+  local file=$1
+  local config=$2
+  local default=$3
 
-  value=$(sed -n "s/^$config:[[:space:]]*\(.\+\)$/\1/p" "$config_file" | awk -F# '{print $1}')
+  value=$(sed -n "s/^$config:[[:space:]]*\(.\+\)$/\1/p" "$file" | awk -F# '{print $1}')
   if [ ! -z "$value" ]; then
     echo "$value"
   else
@@ -121,10 +129,30 @@ get_config() {
   fi
 }
 
-data_path=$(get_config storage_data_path "$default_data_path")
-log_path=$(get_config log_path "$default_log_path")
-admin_port=$(get_config network_admin_http_port 8444)
-admin_address=$(get_config network_admin_http_address "127.0.0.1")
+if [ -z "$user_config_file" ]; then
+  # if user hasn't specified a config file, just link the default configs
+  ln -s "$template_default_configs" "$final_config_path"
+else
+  # merge user configs with the default configs
+  user_configs=$(list_configs "$user_config_file")
+  default_configs=$(list_configs "$template_default_configs")
+  all_keys=$(printf "$user_configs\n$default_configs" | sort | uniq)
+
+  echo "Merging user configs to $final_config_path..."
+
+  echo "---" > "$final_config_path"
+  for config_key in $(echo $all_keys); do
+    default_value=$(get_config "$template_default_configs" "$config_key" "")
+    config_value=$(get_config "$user_config_file" "$config_key" "$default_value")
+
+    echo "$config_key: $config_value" >> "$final_config_path"
+  done
+fi
+
+data_path=$(get_config "$final_config_path" storage_data_path "$default_data_path")
+log_path=$(get_config "$final_config_path" log_path "$default_log_path")
+admin_port=$(get_config "$final_config_path" network_admin_http_port "$default_admin_http_port")
+admin_address=$(get_config "$final_config_path" network_admin_http_address "$default_admin_http_address")
 
 mkdir -p "$data_path" "$log_path"
 
@@ -138,12 +166,12 @@ wait_fauna_and_do() {
 
 init_cluster() {
   echo "Initializing the cluster"
-  faunadb-admin -c "$config_file" init
+  faunadb-admin -c "$final_config_path" init
 }
 
 join_cluster() {
   echo "Joining the cluster"
-  faunadb-admin -c "$config_file" join "$1"
+  faunadb-admin -c "$final_config_path" join "$1"
 }
 
 # no action specified but has an empty data path, so init
@@ -161,8 +189,6 @@ fi
 
 cd /faunadb/enterprise
 
-echo "$config_file" > .config_file
-
 if [ "$UID" -ne 0 ]; then
   if [ "$GID" -eq 0 ]; then
     GID=$UID
@@ -171,7 +197,7 @@ if [ "$UID" -ne 0 ]; then
   groupmod -g $GID faunadb > /dev/null 2>&1
 
   chown faunadb:faunadb "$data_path" "$log_path"
-  exec setuidgid faunadb bin/faunadb -c "$config_file"
+  exec setuidgid faunadb bin/faunadb -c "$final_config_path"
 else
-  exec bin/faunadb -c "$config_file"
+  exec bin/faunadb -c "$final_config_path"
 fi

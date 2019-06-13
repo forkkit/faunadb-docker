@@ -1,11 +1,6 @@
 #!/usr/bin/env sh
 
 export FAUNADB_JAR="/faunadb/enterprise/lib/faunadb.jar"
-
-#created by entrypoint script
-config_file="/faunadb/enterprise/.config_file"
-if [ -f "$config_file" ]; then
-  export FAUNADB_CONFIG=$(cat "$config_file")
-fi
+export FAUNADB_CONFIG="/etc/faunadb.yml"
 
 /faunadb/enterprise/bin/faunadb-admin "$@"
