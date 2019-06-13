@@ -1,12 +1,12 @@
 ARG JDK_VERSION
-# Prepare enterprise package
-FROM debian:stretch-slim AS enterprise-package
+# Prepare to unarchive fauna package
+FROM debian:stretch-slim AS faunadb-package
 
 RUN apt-get update && \
 	apt-get install -y unzip && \
 	rm -rf /var/lib/apt/lists/*
 
-WORKDIR faunadb-enterprise
+WORKDIR faunadb
 
 ARG PKG_VERSION
 
@@ -27,28 +27,27 @@ ENV UID=0 \
 WORKDIR faunadb
 
 RUN apt-get update && \
-	apt-get install -y \
-		curl daemontools \
-	&& rm -rf /var/lib/apt/lists/*
+	apt-get install -y curl daemontools && \
+	rm -rf /var/lib/apt/lists/*
 
 RUN useradd -UMd /faunadb faunadb
 
-COPY --from=enterprise-package \
-	/faunadb-enterprise \
-	enterprise/
+COPY --from=faunadb-package \
+	/faunadb \
+	/faunadb
 
-COPY faunadb-admin-wrapper /usr/local/bin/faunadb-admin
-COPY faunadb-enterprise.sh /usr/local/bin/faunadb
-COPY faunadb-entrypoint.sh /usr/local/bin/faunadb-entrypoint.sh
+COPY faunadb-admin.sh /usr/local/bin/faunadb-admin
+COPY faunadb.sh /usr/local/bin/faunadb
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/faunadb \
-    /usr/local/bin/faunadb-entrypoint.sh \
+    /usr/local/bin/entrypoint.sh \
     /usr/local/bin/faunadb-admin
 
 VOLUME /var/log/faunadb /var/lib/faunadb
 
 EXPOSE 8443 7500 7501
 
-ENTRYPOINT ["faunadb-entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["faunadb"]
 
 ARG PKG_VERSION
