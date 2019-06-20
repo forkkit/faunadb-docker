@@ -187,7 +187,7 @@ if [ "$action" = "join" ]; then
   wait_fauna_and_do join_cluster "$join_node" &
 fi
 
-cd /faunadb/enterprise
+cd /faunadb
 
 if [ "$UID" -ne 0 ]; then
   if [ "$GID" -eq 0 ]; then
