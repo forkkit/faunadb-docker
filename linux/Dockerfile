@@ -27,8 +27,10 @@ ENV UID=0 \
 WORKDIR faunadb
 
 RUN apt-get update && \
-	apt-get install -y \
-		curl daemontools \
+     apt install -y curl daemontools
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+     && apt-get install nodejs -y \
+      && npm install -g fauna-shell \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN useradd -UMd /faunadb faunadb
