@@ -6,7 +6,7 @@ host_ip=$(hostname -i)
 join_node="$host_ip"
 action=""
 user_config_file=""
-custom_replica_name=""
+custom_replica_name="NoDC"
 
 show_help() {
   cat <<EOF
@@ -101,7 +101,6 @@ default_admin_http_address="127.0.0.1"
 cat > "$template_default_configs" <<EOF
 ---
 auth_root_key: secret
-replica_name: ${custom_replica_name:-NoDc}
 storage_data_path: $default_data_path
 log_path: $default_log_path
 network_listen_address: $host_ip
@@ -166,7 +165,7 @@ wait_fauna_and_do() {
 
 init_cluster() {
   echo "Initializing the cluster"
-  faunadb-admin -c "$final_config_path" init
+  faunadb-admin -c "$final_config_path" -r $custom_replica_name init
 }
 
 join_cluster() {
@@ -180,6 +179,11 @@ if [ -z "$action" ] && [ -z "$(ls -A $data_path)" ]; then
 fi
 
 if [ "$action" = "init" ]; then
+  if [ -z "$custom_replica_name" ]; then
+    echo "Initialization requires a replica name"
+    exit 1
+  fi
+
   wait_fauna_and_do init_cluster &
 fi
 
