@@ -17,7 +17,7 @@ Options:
  --init                 Initialize the node (default action).
  --run                  Run and doesn't initialize the node.
  --join host[:port]     Join a cluster through an active node specified in host and port.
- --replica_name <name>  Specify a replica name for the node.
+ --replica_name <name>  Specify a replica name for the node (default: "NoDC").
  --config <path>        Specify a custom config file. Should be accessible inside the docker image.
 EOF
 }
@@ -165,12 +165,12 @@ wait_fauna_and_do() {
 
 init_cluster() {
   echo "Initializing the cluster"
-  faunadb-admin -c "$final_config_path" -r $custom_replica_name init
+  faunadb-admin -c "$final_config_path" -r "$custom_replica_name" init
 }
 
 join_cluster() {
   echo "Joining the cluster"
-  faunadb-admin -c "$final_config_path" join "$1"
+  faunadb-admin -c "$final_config_path" -r "$custom_replica_name" join "$join_node"
 }
 
 # no action specified but has an empty data path, so init
@@ -188,7 +188,12 @@ if [ "$action" = "init" ]; then
 fi
 
 if [ "$action" = "join" ]; then
-  wait_fauna_and_do join_cluster "$join_node" &
+  if [ -z "$custom_replica_name" ]; then
+    echo "Joining requires a replica name"
+    exit 1
+  fi
+
+  wait_fauna_and_do join_cluster &
 fi
 
 cd /faunadb
