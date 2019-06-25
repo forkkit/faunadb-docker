@@ -10,10 +10,10 @@ WORKDIR faunadb
 
 ARG PKG_VERSION
 
-COPY faunadb-enterprise-$PKG_VERSION.zip faunadb-enterprise-$PKG_VERSION.zip
+COPY faunadb-$PKG_VERSION.zip faunadb-$PKG_VERSION.zip
 
-RUN unzip -q faunadb-enterprise-$PKG_VERSION.zip && \
-	rm faunadb-enterprise-$PKG_VERSION.zip && \
+RUN unzip -q faunadb-$PKG_VERSION.zip && \
+	rm faunadb-$PKG_VERSION.zip && \
 	cp -r faunadb-$PKG_VERSION/** . && \
 	rm -r faunadb-$PKG_VERSION
 

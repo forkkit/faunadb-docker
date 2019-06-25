@@ -44,10 +44,10 @@ function Target-FetchRelease {
     Require-Var "FAUNADB_VERSION" $Version
     Require-Var "FAUNADB_PKG_VERSION" $PkgVersion
 
-    $TargetPath = "faunadb-enterprise-$PkgVersion.zip"
+    $TargetPath = "faunadb-$PkgVersion.zip"
 
     if (-not (Test-Path $TargetPath)) {
-        aws s3 cp "s3://fauna-releases/builds/enterprise/$Version/faunadb-enterprise-$PkgVersion.zip" .
+        aws s3 cp "s3://fauna-releases/builds/enterprise/$Version/faunadb-$PkgVersion.zip" .
         if ($LastExitCode -ne '0') { Exit $LastExitCode }
     }
 }
@@ -56,10 +56,10 @@ function Target-FetchNightly {
     Require-Var "FAUNADB_NIGHTLY" $Nightly
     Require-Var "FAUNADB_PKG_VERSION" $PkgVersion
 
-    $TargetPath = "faunadb-enterprise-$PkgVersion.zip"
+    $TargetPath = "faunadb-$PkgVersion.zip"
 
     if (-not (Test-Path $TargetPath)) {
-        aws s3 cp "s3://fauna-nightly/$Env:FAUNADB_NIGHTLY/faunadb-enterprise-$PkgVersion.zip" .
+        aws s3 cp "s3://fauna-nightly/$Env:FAUNADB_NIGHTLY/faunadb-$PkgVersion.zip" .
         if ($LastExitCode -ne '0') { Exit $LastExitCode }
     }
 }
