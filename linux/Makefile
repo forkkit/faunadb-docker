@@ -34,10 +34,10 @@ publish-unstable-release: -has-version -has-jdk-version
 publish-nightly: -has-version -has-jdk-version
 	$(call push_image,gcr.io/faunadb-cloud/faunadb/enterprise/nightly)
 
--fetch: faunadb-enterprise-$(FAUNADB_PKG_VERSION).zip
+-fetch: faunadb-$(FAUNADB_PKG_VERSION).zip
 
-faunadb-enterprise-$(FAUNADB_PKG_VERSION).zip:
-	aws s3 cp $(package_url)/faunadb-enterprise-$(FAUNADB_PKG_VERSION).zip .
+faunadb-$(FAUNADB_PKG_VERSION).zip:
+	aws s3 cp $(package_url)/faunadb-$(FAUNADB_PKG_VERSION).zip .
 
 -has-version:
 ifndef FAUNADB_VERSION

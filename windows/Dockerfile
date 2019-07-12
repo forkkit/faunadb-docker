@@ -8,11 +8,11 @@ WORKDIR "C:\\"
 
 ARG PKG_VERSION
 
-COPY faunadb-enterprise-$PKG_VERSION.zip .
+COPY faunadb-$PKG_VERSION.zip .
 
-RUN Expand-Archive ('faunadb-enterprise-{0}.zip' -f $env:PKG_VERSION) -DestinationPath '.'; \
-	Remove-Item ('faunadb-enterprise-{0}.zip' -f $env:PKG_VERSION) -Force; \
-	Rename-Item -Path ('faunadb-{0}' -f $env:PKG_VERSION) -NewName 'faunadb-enterprise'
+RUN Expand-Archive ('faunadb-{0}.zip' -f $env:PKG_VERSION) -DestinationPath '.'; \
+	Remove-Item ('faunadb-{0}.zip' -f $env:PKG_VERSION) -Force; \
+	Rename-Item -Path ('faunadb-{0}' -f $env:PKG_VERSION) -NewName 'faunadb'
 
 FROM openjdk:$JDK_VERSION-windowsservercore-1803 AS openjdk-package
 
@@ -30,7 +30,7 @@ COPY --from=openjdk-package \
      C:\\java
 
 COPY --from=enterprise-package \
-    C:\\faunadb-enterprise \
+    C:\\faunadb \
     C:\\faunadb
 
 COPY faunadb-entrypoint.ps1 faunadb-entrypoint.ps1
