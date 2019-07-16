@@ -112,7 +112,7 @@ EOF
 list_configs() {
   local file=$1
 
-  sed -n "s/^\(.\+\):[[:space:]]*.\+$/\1/p" "$file" | awk -F# '{print $1}'
+  sed -n "s/^\(.\+\):.\+$/\1/p" "$file"
 }
 
 get_config() {
@@ -120,7 +120,7 @@ get_config() {
   local config=$2
   local default=$3
 
-  value=$(sed -n "s/^$config:[[:space:]]*\(.\+\)$/\1/p" "$file" | awk -F# '{print $1}')
+  value=$(sed -n "s/^$config:\(.\+\)$/\1/p" "$file" | awk -F# '{gsub(/^[ \t]+|[ \t]+$/, "", $1); print $1}')
   if [ ! -z "$value" ]; then
     echo "$value"
   else
@@ -130,7 +130,7 @@ get_config() {
 
 if [ -z "$user_config_file" ]; then
   # if user hasn't specified a config file, just link the default configs
-  ln -s "$template_default_configs" "$final_config_path"
+  ln -sf "$template_default_configs" "$final_config_path"
 else
   # merge user configs with the default configs
   user_configs=$(list_configs "$user_config_file")
