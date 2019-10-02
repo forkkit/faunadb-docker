@@ -31,8 +31,10 @@ publish-unstable-release: -has-version -has-jdk-version
 	$(call push_image,fauna/faunadb-unstable)
 	$(call push_image,gcr.io/faunadb-cloud/faunadb/enterprise/unstable)
 
-publish-nightly: -has-version -has-jdk-version
+publish-nightly-release: -has-version -has-jdk-version
 	$(call push_image,gcr.io/faunadb-cloud/faunadb/enterprise/nightly)
+
+publish-nightly: publish-nightly-release
 
 -fetch: faunadb-$(FAUNADB_PKG_VERSION).zip
 
