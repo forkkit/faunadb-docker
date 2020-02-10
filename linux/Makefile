@@ -23,6 +23,13 @@ build: -has-version -has-pkg-version -has-jdk-version
 		--build-arg JDK_VERSION=$(FAUNADB_JDK_VERSION) \
 		-t $(local_image) .
 
+build-latest-graphql: TAG ?= "fauna/faunadb-graphql:latest"
+build-latest-graphql: 
+	docker build --pull \
+		--build-arg GRAPHQL_IMAGE=gcr.io/faunadb-cloud/faunadb/extensions/graphql:latest \
+		--build-arg FAUNADB_IMAGE=fauna/faunadb:latest \
+		-f Dockerfile-graphql -t $(TAG) .
+
 publish-stable-release: -has-version -has-jdk-version
 	$(call push_image,fauna/faunadb)
 	$(call push_image,gcr.io/faunadb-cloud/faunadb/enterprise/release)
