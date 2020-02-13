@@ -1,0 +1,26 @@
+ARG GRAPHQL_IMAGE
+ARG FAUNADB_IMAGE
+
+FROM $GRAPHQL_IMAGE AS graphql
+FROM $FAUNADB_IMAGE AS fauna
+
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+  && apt-get install nodejs -y \
+  && npm install -g fauna-shell \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN echo  $'default=endpoint\n\
+\n\
+[endpoint]\n\
+domain=localhost\n\
+port=8443\n\
+scheme=http\n\
+secret=secret\n\
+' > ~/.fauna-shell
+
+COPY --from=graphql /fauna/faunadb-graphql-api.jar /faunadb/lib/
+COPY entrypoint-graphql.sh /usr/local/bin/entrypoint.sh
+
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 8084 8443 7500 7501
