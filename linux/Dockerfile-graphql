@@ -9,7 +9,7 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
   && npm install -g fauna-shell \
   && rm -rf /var/lib/apt/lists/*
 
-RUN echo  $'default=endpoint\n\
+RUN echo 'default=endpoint\n\
 \n\
 [endpoint]\n\
 domain=localhost\n\
